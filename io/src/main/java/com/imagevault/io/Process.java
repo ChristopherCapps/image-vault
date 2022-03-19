@@ -1,5 +1,6 @@
 package com.imagevault.io;
 
+import static com.imagevault.io.Persistence.Logging;
 import static java.util.Objects.requireNonNull;
 
 import com.imagevault.common.ValidatingBuilder;
@@ -8,6 +9,7 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.collections4.list.UnmodifiableList;
 import org.apache.commons.exec.CommandLine;
@@ -17,12 +19,8 @@ import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Process {
-
-  private static final Logger logger = LoggerFactory.getLogger(Process.class);
 
   @NotNull
   protected Path executable;
@@ -55,18 +53,18 @@ public class Process {
     executor.setStreamHandler(new PumpStreamHandler(outputBuffer, errorBuffer));
 
     try {
-      logger.debug("Executing: '{}'", commandLine);
+      Logging.debug("executing: %s", commandLine);
       final int exitValue = executor.execute(commandLine);
       final ProcessResult processResult = ProcessResultSupport.of(
           commandLine,
           exitValue,
           convertBufferToString(outputBuffer),
           convertBufferToString(errorBuffer));
-      logger.debug("Execution of '{}' yielded result: {}", commandLine, processResult);
+      Logging.debug("result: %s", processResult);
       return processResult;
-    } catch (
-        Exception e) {
-      throw new RuntimeException(String.format("Failed to execute command: %s", commandLine), e);
+    } catch (Exception e) {
+      Logging.error(e, "failed to execute: %s", commandLine.getExecutable());
+      return ProcessResultSupport.of(commandLine, e);
     }
   }
 
@@ -90,11 +88,13 @@ public class Process {
 
     CommandLine getCommandLine();
 
-    String getOutput();
+    Optional<String> getOutput();
 
-    String getError();
+    Optional<String> getError();
 
-    int getExitCode();
+    Optional<Throwable> getThrowable();
+
+    Optional<Integer> getExitCode();
   }
 
   public static class ProcessResultSupport implements ProcessResult {
@@ -103,39 +103,55 @@ public class Process {
     private final int exitCode;
     private final String output;
     private final String error;
+    private final Throwable throwable;
+
+    public static ProcessResultSupport of(final CommandLine commandLine,
+        final Throwable throwable) {
+      return new ProcessResultSupport(commandLine, -1, null, null, throwable);
+    }
 
     public static ProcessResultSupport of(
         final CommandLine commandLine,
         final int exitCode,
         final String output,
         final String error) {
-      return new ProcessResultSupport(commandLine, exitCode, output, error);
+      return new ProcessResultSupport(commandLine, exitCode, output, error, null);
+    }
+
+    protected ProcessResultSupport(final ProcessResult processResult) {
+      this.commandLine = processResult.getCommandLine();
+      this.exitCode = processResult.getExitCode().orElse(-1);
+      this.output = processResult.getOutput().orElse(null);
+      this.error = processResult.getError().orElse(null);
+      this.throwable = processResult.getThrowable().orElse(null);
     }
 
     protected ProcessResultSupport(
         final CommandLine commandLine,
         final int exitCode,
         final String output,
-        final String error) {
+        final String error,
+        final Throwable throwable) {
       this.commandLine = requireNonNull(commandLine);
       this.exitCode = exitCode;
-      this.output = requireNonNull(output);
-      this.error = requireNonNull(error);
+      this.output = output;
+      this.error = error;
+      this.throwable = throwable;
     }
 
     @Override
-    public String getOutput() {
-      return output;
+    public Optional<String> getOutput() {
+      return Optional.ofNullable(output);
     }
 
     @Override
-    public String getError() {
-      return error;
+    public Optional<String> getError() {
+      return Optional.ofNullable(error);
     }
 
     @Override
-    public int getExitCode() {
-      return exitCode;
+    public Optional<Integer> getExitCode() {
+      return Optional.ofNullable(exitCode);
     }
 
     @Override
@@ -144,49 +160,62 @@ public class Process {
     }
 
     @Override
-    public String toString() {
-      return "ProcessResultSupport{" +
-          "commandLine='" + commandLine + '\'' +
-          ", exitCode=" + exitCode +
-          ", output='" + output + '\'' +
-          ", error='" + error + '\'' +
-          '}';
-    }
-
-    public CommandLine commandLine() {
-      return commandLine;
-    }
-
-    public int exitCode() {
-      return exitCode;
-    }
-
-    public String output() {
-      return output;
-    }
-
-    public String error() {
-      return error;
+    public Optional<Throwable> getThrowable() {
+      return Optional.ofNullable(throwable);
     }
 
     @Override
-    public boolean equals(Object obj) {
-      if (obj == this)
+    public String toString() {
+      return "ProcessResultSupport{" +
+          "commandLine=" + commandLine +
+          ", exitCode=" + exitCode +
+          ", output='" + output + '\'' +
+          ", error='" + error + '\'' +
+          ", throwable=" + throwable +
+          '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
         return true;
-      if (obj == null || obj.getClass() != this.getClass())
+      }
+      if (o == null || getClass() != o.getClass()) {
         return false;
-      var that = (ProcessResultSupport) obj;
-      return Objects.equals(this.commandLine, that.commandLine) &&
-          this.exitCode == that.exitCode &&
-          Objects.equals(this.output, that.output) &&
-          Objects.equals(this.error, that.error);
+      }
+      ProcessResultSupport that = (ProcessResultSupport) o;
+      return exitCode == that.exitCode && Objects.equals(commandLine, that.commandLine)
+          && Objects.equals(output, that.output) && Objects.equals(error,
+          that.error) && Objects.equals(throwable, that.throwable);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(commandLine, exitCode, output, error);
+      return Objects.hash(commandLine, exitCode, output, error, throwable);
     }
 
+    protected String getRequiredOutput() {
+      return getRequiredString(getOutput());
+    }
+
+    protected RuntimeException internalErrorInOutput() {
+      return internalError("internal error: unexpected command output for %s: %s", getCommandLine(),
+          getOutput());
+    }
+
+    protected RuntimeException internalError(final String format, final Object... args) {
+      return Console.abend(format, args);
+    }
+
+    protected String getRequiredString(final Optional<String> stringOptional) {
+      return stringOptional
+          .filter(StringUtils::isNotBlank)
+          .map(StringUtils::trim)
+          .orElseThrow(() -> internalError(
+              "internal error: command %s did not produce expected output\nSee log '%s' for details.",
+              getCommandLine(),
+              Logging.getLogPath()));
+    }
   }
 
   public static class Builder extends ValidatingBuilder<Process, Builder> {

@@ -1,6 +1,7 @@
 package com.imagevault.core.exiftool;
 
 import com.imagevault.core.exiftool.FileTypeCommand.FileTypeCommandResult;
+import com.imagevault.io.Process.ProcessResult;
 import com.imagevault.io.exiftool.Exiftool.Tag;
 import java.nio.file.Path;
 
@@ -9,9 +10,9 @@ public class FileTypeCommand extends ExiftoolCommand<FileTypeCommandResult> {
   public static FileTypeCommand of(final Path path) {
     return FileTypeCommand.newBuilder()
         .withPath(path)
-        .withTags(Tag.FileName, Tag.Directory)
-        .withOption("-S")
-        .withOption("-json")
+        .withExtractTags(Tag.FileName, Tag.Directory)
+        .withIoVeryShortOutputFormat()
+        .withProcessingExtension("")
         .build();
   }
 
@@ -19,12 +20,16 @@ public class FileTypeCommand extends ExiftoolCommand<FileTypeCommandResult> {
     // builder only
   }
 
+  @Override
+  protected FileTypeCommandResult buildCommandResult(ProcessResult processResult) {
+    return new DefaultFileTypeCommandResult(processResult);
+  }
+
   public static Builder newBuilder() {
     return new Builder();
   }
 
-  public static class Builder extends
-      ExiftoolCommand.Builder<FileTypeCommand, FileTypeCommandResult> {
+  public static class Builder extends ExiftoolCommand.Builder<FileTypeCommand> {
 
     @Override
     protected FileTypeCommand newObject() {
@@ -32,7 +37,16 @@ public class FileTypeCommand extends ExiftoolCommand<FileTypeCommandResult> {
     }
   }
 
-  interface FileTypeCommandResult extends ExiftoolCommandResult {
+  public interface FileTypeCommandResult extends ExiftoolCommandResult {
 
   }
+
+  static class DefaultFileTypeCommandResult extends ExiftoolCommandResultSupport implements
+      FileTypeCommandResult {
+
+    protected DefaultFileTypeCommandResult(ProcessResult processResult) {
+      super(processResult);
+    }
+  }
+
 }

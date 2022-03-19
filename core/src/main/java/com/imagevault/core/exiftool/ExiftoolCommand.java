@@ -11,13 +11,9 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class ExiftoolCommand<TResult extends ExiftoolCommandResult> extends
+public abstract class ExiftoolCommand<TResult extends ExiftoolCommandResult> extends
     CommandSupport<TResult> {
-
-  private static final Logger logger = LoggerFactory.getLogger(ExiftoolCommand.class);
 
   @NotNull
   protected List<String> tags = new LinkedList<>();
@@ -28,9 +24,7 @@ public class ExiftoolCommand<TResult extends ExiftoolCommandResult> extends
   }
 
   @Override
-  protected TResult buildCommandResult(ProcessResult processResult) {
-    return (TResult) new ExiftoolCommandResultSupport(processResult);
-  }
+  protected abstract TResult buildCommandResult(final ProcessResult processResult);
 
   @Override
   protected List<String> buildArguments() {
@@ -44,44 +38,52 @@ public class ExiftoolCommand<TResult extends ExiftoolCommandResult> extends
   }
 
   private void addTag(final String tag, final List<String> arguments) {
-    arguments.add(Exiftool.OPTION_TAG_PREFIX + tag);
+    arguments.add(Exiftool.OPTION_TAG_EXTRACT + tag);
   }
 
-  public abstract static class Builder<TCommand extends ExiftoolCommand<TResult>,
-      TResult extends ExiftoolCommandResult> extends CommandSupport.Builder<TCommand, TResult> {
+  public abstract static class Builder<TCommand extends ExiftoolCommand<?>>
+      extends CommandSupport.Builder<TCommand, Builder<TCommand>> {
 
     protected Builder() {
       withExecutable(Exiftool.getExecutable());
     }
 
-    public Builder<TCommand, TResult> withOption(final String option) {
-      set(o -> o.options.add(option));
-      return this;
+    public Builder<TCommand> withOption(final String option) {
+      return set(o -> o.options.add(option));
     }
 
-    public Builder<TCommand, TResult> withJsonOption() {
-      return set(o -> o.options.add(Exiftool.OPTION_JSON_OUTPUT));
-      return this;
+    public Builder<TCommand> withIoJsonOutputFormat() {
+      return set(o -> o.options.add(Exiftool.OPTION_IO_JSON_OUTPUT_FORMAT));
     }
 
-    public Builder<TCommand, TResult> withTag(final Tag tag) {
-      return withTag(tag.name());
+    public Builder<TCommand> withIoVeryShortOutputFormat() {
+      return set(o -> o.options.add(Exiftool.OPTION_IO_VERY_SHORT_OUTPUT_FORMAT));
     }
 
-    public Builder<TCommand, TResult> withTags(final Tag... tag) {
+    public Builder<TCommand> withProcessingExtension(final String extension) {
+      return set(o -> o.options.add(withOption(Exiftool.OPTION_PROCESSING_EXTENSION, extension)));
+    }
+
+    public Builder<TCommand> withExtractTag(final Tag tag) {
+      return withExtractTag(tag.name());
+    }
+
+    public Builder<TCommand> withExtractTags(final Tag... tag) {
       Arrays.stream(tag).sequential()
-          .forEach(this::withTag);
+          .forEach(this::withExtractTag);
       return this;
     }
 
-    public Builder<TCommand, TResult> withTag(final String tag) {
-      set(o -> o.tags.add(tag));
-      return this;
+    public Builder<TCommand> withExtractTag(final String tag) {
+      return set(o -> o.tags.add(tag));
     }
 
-    public Builder<TCommand, TResult> withPath(final Path path) {
-      set(o -> o.paths.add(path));
-      return this;
+    public Builder<TCommand> withPath(final Path path) {
+      return set(o -> o.paths.add(path));
+    }
+
+    private String withOption(final String option, final String value) {
+      return String.format("%s %s", option, value);
     }
   }
 

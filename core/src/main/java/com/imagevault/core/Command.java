@@ -18,16 +18,16 @@ public interface Command<TResult extends CommandResult> {
     class CommandResultSupport extends ProcessResultSupport implements CommandResult {
 
       protected CommandResultSupport(final ProcessResult processResult) {
-        this(processResult.getCommandLine(), processResult.getExitCode(), processResult.getOutput(),
-            processResult.getError());
+        super(processResult);
       }
 
       protected CommandResultSupport(
           final CommandLine commandLine,
           final int exitCode,
           final String output,
-          final String error) {
-        super(commandLine, exitCode, output, error);
+          final String error,
+          final Throwable throwable) {
+        super(commandLine, exitCode, output, error, throwable);
       }
     }
 
@@ -49,10 +49,11 @@ public interface Command<TResult extends CommandResult> {
 
       protected abstract TResult buildCommandResult(final ProcessResult processResult);
 
-      public abstract static class Builder<TCommand extends CommandSupport<TResult>, TResult extends CommandResult> extends
-          ValidatingBuilder<TCommand, Builder<TCommand, TResult>> {
+      public abstract static class Builder<TCommand extends CommandSupport<?>,
+          TBuilder extends Builder<TCommand, TBuilder>> extends
+          ValidatingBuilder<TCommand, TBuilder> {
 
-        public Builder<TCommand, TResult> withExecutable(final Path executable) {
+        public Builder<TCommand, TBuilder> withExecutable(final Path executable) {
           return set(o -> o.executable = executable);
         }
       }

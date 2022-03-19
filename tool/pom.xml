@@ -3,9 +3,9 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>image-vault</artifactId>
-    <groupId>com.imagevault</groupId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>blorple</artifactId>
+    <groupId>com.blorple</groupId>
+    <version>1.0-alpha</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -17,9 +17,42 @@
       <artifactId>commons-cli</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
+      <groupId>com.blorple</groupId>
+      <artifactId>core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.blorple</groupId>
+      <artifactId>io</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.sdk</groupId>
+      <artifactId>graal-sdk</artifactId>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.graalvm.nativeimage</groupId>
+        <artifactId>native-image-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>native-image</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <skip>false</skip>
+          <imageName>${parent.artifactId}</imageName>
+          <mainClass>com.imagevault.tool.BlorpleCli</mainClass>
+          <buildArgs>
+            <!-- x-no-fallback -->
+          </buildArgs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
