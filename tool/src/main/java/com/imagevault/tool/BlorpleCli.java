@@ -3,14 +3,15 @@ package com.imagevault.tool;
 import com.imagevault.core.Engine;
 import com.imagevault.io.Console;
 import com.imagevault.io.Persistence;
-import com.imagevault.io.Persistence.Logging;
-import com.imagevault.io.Shell;
+import java.io.PrintWriter;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.output.StringBuilderWriter;
 
 public class BlorpleCli {
 
@@ -18,30 +19,48 @@ public class BlorpleCli {
 
     Console.initialize();
     Persistence.initialize();
-    Engine.initialize();
+
+    final Engine engine = Engine.of();
 
     CommandLineParser cliParser = new DefaultParser();
     try {
       final CommandLine cli = cliParser.parse(Cli.OPTIONS, args);
-      //Console.print("Working Dir: %1$s", Shell.Paths.getWorkingDirectoryPath());
-      Logging.debug("Working Dir: %s", Shell.Paths.getWorkingDirectoryPath());
-      //Output.debug("Args: %1$s", args);
+      if (cli.getOptions().length == 0) {
+        Console.abend("no options specified\n\n%s", buildHelp(""));
+      } else if (cli.hasOption(Cli.INIT_OPTION)) {
+        engine.init();
+      }
     } catch (ParseException pe) {
-      System.err.println(pe.getMessage());
+      Console.abend("%s\n\n%s", pe.getMessage(), buildHelp(""));
     }
+  }
+
+  private static String buildHelp(final String footer) {
+    StringBuilderWriter writer = new StringBuilderWriter();
+    new HelpFormatter().printHelp(
+        new PrintWriter(writer),
+        50,
+        "blorple <command> [options]",
+        "Create and manage repositories of media files\n",
+        Cli.OPTIONS,
+        2,
+        4,
+        footer);
+    return writer.toString();
   }
 
   static class Cli {
 
-    private static final Option SAMPLE_OPTION =
+    private static final Option INIT_OPTION =
         Option.builder()
-            .option("sample")
-            .desc("Enables sample mode")
+            .option("init")
+            .longOpt("initialize")
+            .desc("Establishes the current directory as the root of a new repository")
             .build();
 
     private static final Options OPTIONS =
         new Options()
-            .addOption(SAMPLE_OPTION);
+            .addOption(INIT_OPTION);
   }
 
   // init

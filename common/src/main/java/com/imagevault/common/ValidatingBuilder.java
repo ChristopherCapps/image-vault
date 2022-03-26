@@ -1,17 +1,12 @@
 package com.imagevault.common;
 
-import static java.util.Objects.requireNonNull;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -21,24 +16,6 @@ import javax.validation.constraints.NotNull;
  * @param <B> the type of the builder itself
  */
 public abstract class ValidatingBuilder<T, B extends ValidatingBuilder<T, B>> {
-
-  static {
-    // Disable noisy Hibernate logging
-    java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.SEVERE);
-  }
-
-  private static final Validator DEFAULT_VALIDATOR =
-      Validation.buildDefaultValidatorFactory().getValidator();
-
-  protected static Validator validator = DEFAULT_VALIDATOR;
-
-  public static void restoreValidator() {
-    ValidatingBuilder.validator = DEFAULT_VALIDATOR;
-  }
-
-  public static void setValidator(Validator validator) {
-    ValidatingBuilder.validator = requireNonNull(validator);
-  }
 
   protected T object;
 
@@ -83,7 +60,7 @@ public abstract class ValidatingBuilder<T, B extends ValidatingBuilder<T, B>> {
   }
 
   private void validate() {
-    final Set<ConstraintViolation<T>> violations = validator.validate(object);
+    final Set<ConstraintViolation<T>> violations = Collections.emptySet(); //validator.validate(object);
     if (violations.isEmpty()) {
       return;
     }
@@ -91,4 +68,5 @@ public abstract class ValidatingBuilder<T, B extends ValidatingBuilder<T, B>> {
         .join("\n", violations.stream().map(v -> v.toString()).collect(Collectors.toList()));
     throw new IllegalArgumentException("Failed to build " + object.getClass() + "\n" + messages);
   }
+
 }

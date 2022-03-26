@@ -48,7 +48,7 @@
           <imageName>${parent.artifactId}</imageName>
           <mainClass>com.imagevault.tool.BlorpleCli</mainClass>
           <buildArgs>
-            <!-- x-no-fallback -->
+            --no-fallback
           </buildArgs>
         </configuration>
       </plugin>

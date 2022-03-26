@@ -8,6 +8,13 @@ import org.apache.commons.lang3.SystemUtils;
 
 public class Shell {
 
+  public static class Process {
+
+    public static void terminate() {
+      System.exit(1);
+    }
+  }
+
   public static class Paths {
 
     public static Path getHomePath() {

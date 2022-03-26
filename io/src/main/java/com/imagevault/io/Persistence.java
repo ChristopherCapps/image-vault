@@ -83,6 +83,7 @@ public class Persistence {
         //"%1$tc %2$s%n%4$s: %5$s%6$s%n"
         logManagerProperties.setProperty("java.util.logging.SimpleFormatter.format",
             "%1$tc %5$s%6$s%n");
+        logManagerProperties.setProperty("org.hibernate.level", "SEVERE");
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         logManagerProperties.store(buffer, null);
         LogManager.getLogManager()

@@ -56,14 +56,15 @@ public class Console {
 
   public static RuntimeException abend(final Throwable t, final String format,
       final Object... args) {
-    Logging.error(fatal(format, args));
+    Logging.error(fatal(format + System.lineSeparator(), args));
     Logging.error(cause(t));
     return abend(t);
   }
 
   public static RuntimeException abend(final Throwable t) {
     Logging.error("<abend>");
-    System.exit(1);
+    print("\n");
+    Shell.Process.terminate();
     return new RuntimeException(t);
   }
 

@@ -10,14 +10,11 @@ import java.util.List;
 
 public abstract class GitCommand<TResult extends GitCommandResult> extends CommandSupport<TResult> {
 
-  protected List<String> options = new LinkedList<>();
+  protected String command;
+  protected List<String> arguments = new LinkedList<>();
 
   @Override
-  protected List<String> buildArguments() {
-    final List<String> arguments = new LinkedList<>();
-
-    options.forEach(arguments::add);
-
+  protected List<String> build() {
     return arguments;
   }
 
@@ -28,8 +25,12 @@ public abstract class GitCommand<TResult extends GitCommandResult> extends Comma
       withExecutable(Git.getExecutable());
     }
 
-    public Builder<TCommand> withOption(final String option) {
-      return set(o -> o.options.add(option));
+    public Builder<TCommand> withCommand(final String command) {
+      return set(o -> o.command = command);
+    }
+
+    public Builder<TCommand> withArgument(final String argument) {
+      return set(o -> o.arguments.add(argument));
     }
   }
 

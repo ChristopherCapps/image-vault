@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNull;
 import com.imagevault.common.ValidatingBuilder;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -154,6 +155,10 @@ public class Process {
       return Optional.ofNullable(exitCode);
     }
 
+    public boolean hasErrorExitCode() {
+      return getExitCode().filter(exitCode -> exitCode != 0).isPresent();
+    }
+
     @Override
     public CommandLine getCommandLine() {
       return commandLine;
@@ -198,9 +203,16 @@ public class Process {
       return getRequiredString(getOutput());
     }
 
-    protected RuntimeException internalErrorInOutput() {
-      return internalError("internal error: unexpected command output for %s: %s", getCommandLine(),
-          getOutput());
+    protected String getRequiredError() {
+      return getRequiredString(getError());
+    }
+
+    protected RuntimeException internalErrorInResult() {
+      return internalError(
+          "internal error: unexpected command result for %s: [stdout: %s][stderr: %s]",
+          getCommandLine(),
+          getOutput(),
+          getError());
     }
 
     protected RuntimeException internalError(final String format, final Object... args) {
@@ -215,6 +227,42 @@ public class Process {
               "internal error: command %s did not produce expected output\nSee log '%s' for details.",
               getCommandLine(),
               Logging.getLogPath()));
+    }
+
+    protected boolean resultContains(final Optional<String> result, final String substring) {
+      return result
+          .filter(StringUtils::isNotBlank)
+          .filter(err -> StringUtils.contains(err, substring))
+          .isPresent();
+    }
+
+    protected boolean errorContains(final String substring) {
+      return resultContains(getError(), substring);
+    }
+
+    protected boolean outputContains(final String substring) {
+      return resultContains(getOutput(), substring);
+    }
+
+    protected Optional<String> findResultLineContaining(final String result,
+        final String substring) {
+      final String[] lines = StringUtils.split(result, System.lineSeparator());
+      return Arrays.stream(lines)
+          .filter(line -> StringUtils.contains(line, substring))
+          .findFirst();
+    }
+
+    protected String findResultLineContainingRequired(final String result, final String substring) {
+      return findResultLineContaining(result, substring)
+          .orElseThrow(() -> internalErrorInResult());
+    }
+
+    protected Optional<String> findOutputLineContaining(final String substring) {
+      return findResultLineContaining(getRequiredOutput(), substring);
+    }
+
+    protected String findOutputLineContainingRequired(final String substring) {
+      return findResultLineContainingRequired(getRequiredOutput(), substring);
     }
   }
 

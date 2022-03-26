@@ -50,7 +50,7 @@ public class VersionCommand extends GitCommand<VersionCommandResult> {
           .map(StringUtils::split)
           .filter(result -> result != null && result.length == 3)
           .map(result -> result[2])
-          .orElseThrow(this::internalErrorInOutput);
+          .orElseThrow(this::internalErrorInResult);
     }
   }
 }
