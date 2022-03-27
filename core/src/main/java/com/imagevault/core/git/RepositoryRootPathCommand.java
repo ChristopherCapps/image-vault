@@ -1,7 +1,6 @@
 package com.imagevault.core.git;
 
 import com.imagevault.core.git.RepositoryRootPathCommand.RepositoryRootPathCommandResult;
-import com.imagevault.io.Process.ProcessResult;
 import com.imagevault.io.Shell;
 import com.imagevault.io.git.Git;
 import java.nio.file.Path;
@@ -11,8 +10,8 @@ public class RepositoryRootPathCommand extends GitCommand<RepositoryRootPathComm
 
   public static RepositoryRootPathCommand of() {
     return newBuilder()
-        .withArgument(Git.COMMAND_REV_PARSE)
-        .withArgument(Git.COMMAND_REV_PARSE_SHOW_TOPLEVEL_ARG)
+        .withCommand(Git.COMMAND_REV_PARSE)
+        .withCommandFlag(Git.COMMAND_REV_PARSE_SHOW_TOPLEVEL_FLAG)
         .build();
   }
 

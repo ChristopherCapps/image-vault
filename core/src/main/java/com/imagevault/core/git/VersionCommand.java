@@ -1,7 +1,6 @@
 package com.imagevault.core.git;
 
 import com.imagevault.core.git.VersionCommand.VersionCommandResult;
-import com.imagevault.io.Process.ProcessResult;
 import com.imagevault.io.git.Git;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
@@ -10,7 +9,7 @@ public class VersionCommand extends GitCommand<VersionCommandResult> {
 
   public static VersionCommand of() {
     return VersionCommand.newBuilder()
-        .withOption(Git.OPTION_VERSION)
+        .withFlag(Git.FLAG_VERSION)
         .build();
   }
 

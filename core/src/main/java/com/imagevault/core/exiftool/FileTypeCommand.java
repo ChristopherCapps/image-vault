@@ -1,7 +1,6 @@
 package com.imagevault.core.exiftool;
 
 import com.imagevault.core.exiftool.FileTypeCommand.FileTypeCommandResult;
-import com.imagevault.io.Process.ProcessResult;
 import com.imagevault.io.exiftool.Exiftool.Tag;
 import java.nio.file.Path;
 

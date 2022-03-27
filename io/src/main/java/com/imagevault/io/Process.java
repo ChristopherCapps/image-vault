@@ -69,20 +69,16 @@ public class Process {
     }
   }
 
-  public static ProcessResult run(final Path executable, final List<String> arguments) {
-    final Builder builder = newBuilder()
-        .withExecutable(requireNonNull(executable));
-    requireNonNull(arguments)
-        .forEach(arg -> builder.withArgument(arg));
-    return builder.build().run();
-  }
+//  public static ProcessResult run(final Path executable, final List<String> arguments) {
+//    final Builder builder = newBuilder()
+//        .withExecutable(requireNonNull(executable));
+//    requireNonNull(arguments)
+//        .forEach(arg -> builder.withArgument(arg));
+//    return builder.build().run();
+//  }
 
   private static String convertBufferToString(final ByteArrayOutputStream buffer) {
     return StringUtils.trimToEmpty(new String(buffer.toByteArray(), Charset.defaultCharset()));
-  }
-
-  public static Builder newBuilder() {
-    return new Builder();
   }
 
   public interface ProcessResult {
@@ -266,19 +262,19 @@ public class Process {
     }
   }
 
-  public static class Builder extends ValidatingBuilder<Process, Builder> {
+  public abstract static class Builder<T extends Process> extends ValidatingBuilder<T, Builder<T>> {
 
-    public Builder withExecutable(final Path executable) {
+    public Builder<T> withExecutable(final Path executable) {
       return set(o -> o.executable = executable);
     }
 
-    public Builder withArgument(final String argument) {
+    public Builder<T> withArgument(final String argument) {
       return set(o -> o.arguments.add(argument));
     }
 
-    @Override
-    protected Process newObject() {
-      return new Process();
+    public Builder<T> withArguments(final String... arguments) {
+      Arrays.stream(arguments).forEach(this::withArgument);
+      return this;
     }
   }
 

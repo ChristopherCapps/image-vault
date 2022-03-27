@@ -3,27 +3,27 @@ package com.imagevault.core.git;
 import com.imagevault.core.git.ConfigCommand.ConfigCommandResult;
 import com.imagevault.io.Console;
 import com.imagevault.io.Persistence.Logging;
-import com.imagevault.io.Process.ProcessResult;
 import com.imagevault.io.git.Git;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class ConfigCommand extends GitCommand<ConfigCommandResult> {
 
   public static final String DEFAULT_USER = "blorple";
   public static final String DEFAULT_EMAIL = "blorple@gmail.com";
 
-  public static ConfigCommand setUser(final String user) {
+  public static ConfigCommand setUserName(final String name) {
     return newBuilder()
-        .withCommand(Git.COMMAND_CONFIG,
-            Pair.of(Git.COMMAND_CONFIG_USER_ARG, user))
+        .withCommand(Git.COMMAND_CONFIG)
+        .withCommandArgument(Git.COMMAND_CONFIG_USER_NAME_ARG)
+        .withCommandArgument(name)
         .build();
   }
 
-  public static ConfigCommand setEmail(final String email) {
+  public static ConfigCommand setUserEmail(final String email) {
     return newBuilder()
-        .withCommand(Git.COMMAND_CONFIG,
-            Pair.of(Git.COMMAND_CONFIG_EMAIL_ARG, email))
+        .withCommand(Git.COMMAND_CONFIG)
+        .withCommandArgument(Git.COMMAND_CONFIG_USER_EMAIL_ARG)
+        .withCommandArgument(email)
         .build();
   }
 

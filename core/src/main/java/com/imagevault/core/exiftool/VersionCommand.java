@@ -1,7 +1,6 @@
 package com.imagevault.core.exiftool;
 
 import com.imagevault.core.exiftool.VersionCommand.VersionCommandResult;
-import com.imagevault.io.Process.ProcessResult;
 import com.imagevault.io.exiftool.Exiftool;
 
 public class VersionCommand extends ExiftoolCommand<VersionCommandResult> {

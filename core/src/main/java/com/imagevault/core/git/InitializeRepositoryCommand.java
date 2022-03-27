@@ -2,7 +2,6 @@ package com.imagevault.core.git;
 
 import com.imagevault.core.git.InitializeRepositoryCommand.InitializeRepositoryCommandResult;
 import com.imagevault.io.Console;
-import com.imagevault.io.Process.ProcessResult;
 import com.imagevault.io.Shell;
 import com.imagevault.io.git.Git;
 import java.nio.file.Path;
@@ -18,8 +17,8 @@ public class InitializeRepositoryCommand extends GitCommand<InitializeRepository
 
   public static InitializeRepositoryCommand of(final String initialBranchName) {
     return newBuilder()
-        .withArgument(Git.COMMAND_INIT)
-        .withI
+        .withCommand(Git.COMMAND_INIT)
+        .withParameterizedCommandFlag(Git.COMMAND_INIT_INITIAL_BRANCH_FLAG, initialBranchName)
         .build();
   }
 
@@ -53,7 +52,7 @@ public class InitializeRepositoryCommand extends GitCommand<InitializeRepository
     }
 
     public GitCommand.Builder withInitialBranch(final String branch) {
-      return withArgument(Git.COMMAND_INIT_INITIAL_BRANCH_ARG).withArgument(branch);
+      return withParameterizedCommandFlag(Git.COMMAND_INIT_INITIAL_BRANCH_FLAG, branch);
     }
 
     @Override

@@ -27,6 +27,8 @@ public class BlorpleCli {
       final CommandLine cli = cliParser.parse(Cli.OPTIONS, args);
       if (cli.getOptions().length == 0) {
         Console.abend("no options specified\n\n%s", buildHelp(""));
+      } else if (cli.hasOption(Cli.VERSION_OPTION)) {
+        engine.version();
       } else if (cli.hasOption(Cli.INIT_OPTION)) {
         engine.init();
       }
@@ -58,8 +60,15 @@ public class BlorpleCli {
             .desc("Establishes the current directory as the root of a new repository")
             .build();
 
+    private static final Option VERSION_OPTION =
+        Option.builder()
+            .option("version")
+            .desc("Displays versions of blorple and its dependencies")
+            .build();
+
     private static final Options OPTIONS =
         new Options()
+            .addOption(VERSION_OPTION)
             .addOption(INIT_OPTION);
   }
 

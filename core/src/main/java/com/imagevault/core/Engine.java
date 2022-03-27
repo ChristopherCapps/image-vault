@@ -17,6 +17,9 @@ import java.util.function.Function;
 
 public class Engine {
 
+  public static final String NAME = "blorple";
+  public static final String VERSION = "0.1";
+
   public static Engine of() {
     return new Engine();
   }
@@ -26,7 +29,7 @@ public class Engine {
   private final Path workingPath;
 
   private Engine() {
-    Logging.debugSection("blorple: 0.1");
+    Logging.debugSection(String.format("%s %s", NAME, VERSION));
 
     this.workingPath = Shell.Paths.getWorkingDirectoryPath();
     Logging.debug("working path: %s", workingPath);
@@ -68,6 +71,13 @@ public class Engine {
     return versionFn.apply(result);
   }
 
+  public void version() {
+    Console.print(String.format("%s %s\n\n", NAME, VERSION));
+    Console.print(
+        String.format("\tgit: %s\n", com.imagevault.core.git.VersionCommand.of().run().getVersion()));
+    Console.print(String.format("\texiftool: %s\n", VersionCommand.of().run().getVersion()));
+  }
+
   public void init() {
     // First, make sure the working directory is not already part of a repo
     getRepositoryPath()
@@ -84,8 +94,8 @@ public class Engine {
     Logging.debug("created git storage for repository at: %s", repositoryGitPath);
 
     // Configure the default user/email for the repo
-    ConfigCommand.setUser(ConfigCommand.DEFAULT_USER).run();
-    ConfigCommand.setEmail(ConfigCommand.DEFAULT_EMAIL).run();
+    ConfigCommand.setUserName(ConfigCommand.DEFAULT_USER).run();
+    ConfigCommand.setUserEmail(ConfigCommand.DEFAULT_EMAIL).run();
 
     // Add existing files to the repo
 

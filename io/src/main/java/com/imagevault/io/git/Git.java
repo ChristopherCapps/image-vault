@@ -14,18 +14,18 @@ public class Git {
   public final static String EXECUTABLE_LINUX = "git";
   public final static String EXECUTABLE_WIN = "git.exe";
 
-  public final static String OPTION_VERSION = "--version";
+  public final static String FLAG_VERSION = "--version";
 
   public final static String COMMAND_CONFIG = "config";
   public final static String COMMAND_CONFIG_LOCAL_FLAG = "--local";
-  public final static String COMMAND_CONFIG_USER_ARG = "user.name";
-  public final static String COMMAND_CONFIG_EMAIL_ARG = "user.email";
+  public final static String COMMAND_CONFIG_USER_NAME_ARG = "user.name";
+  public final static String COMMAND_CONFIG_USER_EMAIL_ARG = "user.email";
 
   public final static String COMMAND_INIT = "init";
-  public final static String COMMAND_INIT_INITIAL_BRANCH_ARG = "--initial-branch";
+  public final static String COMMAND_INIT_INITIAL_BRANCH_FLAG = "--initial-branch";
 
   public final static String COMMAND_REV_PARSE = "rev-parse";
-  public final static String COMMAND_REV_PARSE_SHOW_TOPLEVEL_ARG = "--show-toplevel";
+  public final static String COMMAND_REV_PARSE_SHOW_TOPLEVEL_FLAG = "--show-toplevel";
 
   public static Path getExecutable() {
     final Platform platform = Shell.getPlatform();
